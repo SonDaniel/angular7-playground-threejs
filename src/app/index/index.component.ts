@@ -3,7 +3,7 @@ import {
   Scene, PerspectiveCamera, WebGLRenderer,
   BoxGeometry, MeshBasicMaterial, Mesh, SphereGeometry,
   MeshPhongMaterial, AmbientLight, DirectionalLight,
-  TextureLoader
+  TextureLoader, Color
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
@@ -42,7 +42,7 @@ export class IndexComponent implements OnInit, AfterViewInit {
   constructor() {
     this.scene = new Scene();
     this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera.position.z = 5;
+    this.camera.position.z = 3;
     this.scene.add(this.camera);
   }
 
@@ -71,10 +71,36 @@ export class IndexComponent implements OnInit, AfterViewInit {
     this.camera.add(light);
 
     var geometry = new SphereGeometry(1, 100, 100);
-    var material = new MeshPhongMaterial();
+
+    // load in texture files
+    var textureLoader = new TextureLoader();
+    var textureMap, textureBumpMap, textureSpecMap;
+
+    textureLoader.load('assets/images/2_no_clouds_4k.jpg', (texture) => {
+      textureMap = texture;
+      console.log('texturemap loaded');
+    });
+
+    textureLoader.load('assets/images/elev_bump_4k.jpg', (texture) => {
+      textureBumpMap = texture;
+      console.log('textureBumpMap loaded');
+    });
+    textureLoader.load('assets/images/water_4k.png', (texture) => {
+      textureSpecMap = texture;
+      console.log('textureSpecMap loaded');
+    });
+
+    var material = new MeshPhongMaterial({
+      map: textureMap,
+      bumpMap: textureBumpMap,
+      bumpScale: 0.005,
+      specularMap: textureSpecMap,
+      specular: new Color('grey')
+    });
     var earthMesh = new Mesh(geometry, material);
     this.scene.add(earthMesh);
-
+    console.log('scene added earth')
+    
     // call the animate loop
     this.animate();
   }
