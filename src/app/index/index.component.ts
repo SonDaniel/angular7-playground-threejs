@@ -71,9 +71,7 @@ export class IndexComponent implements OnInit, AfterViewInit {
     this.camera.add(light);
 
     var geometry = new SphereGeometry(1, 100, 100);
-    var material = new MeshPhongMaterial({
-      map: new TextureLoader().
-    });
+    var material = new MeshPhongMaterial();
     var earthMesh = new Mesh(geometry, material);
     this.scene.add(earthMesh);
 
