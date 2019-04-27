@@ -29,13 +29,17 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 })
 export class IndexComponent implements OnInit, AfterViewInit {
   @ViewChild('rendererContainer') rendererContainer: ElementRef;
-  
-  // Initializing global variables
-   scene: Scene;
-   camera: PerspectiveCamera;
-   renderer: WebGLRenderer = new WebGLRenderer();
-   controls: OrbitControls;
 
+  // Initializing global variables
+  scene: Scene;
+  camera: PerspectiveCamera;
+  renderer: WebGLRenderer = new WebGLRenderer();
+  controls: OrbitControls;
+
+  earthMesh: any;
+  private TEXTURE_MAP: string = 'https://2.bp.blogspot.com/-Jfw4jY6vBWM/UkbwZhdKxuI/AAAAAAAAK94/QTmtnuDFlC8/s1600/2_no_clouds_4k.jpg';
+  private TEXTURE_BUMP_MAP: string = 'https://2.bp.blogspot.com/-oeguWUXEM8o/UkbyhLmUg-I/AAAAAAAAK-E/kSm3sH_f9fk/s1600/elev_bump_4k.jpg';
+  private TEXTURE_SPECULAR_MAP: string = 'https://1.bp.blogspot.com/-596lbFumbyA/Ukb1cHw21_I/AAAAAAAAK-U/KArMZAjbvyU/s1600/water_4k.png';
   /**
    * Constructor is only called once when the class IndexComponent is being initialized
    */
@@ -51,7 +55,7 @@ export class IndexComponent implements OnInit, AfterViewInit {
    * When Component is removed from the DOM and then re-added, ngOnInit will be called again
    * Check out: https://angular.io/guide/lifecycle-hooks#lifecycle-sequence
    */
-  ngOnInit() {}
+  ngOnInit() { }
 
   ngAfterViewInit() {
     // setting up renderer
@@ -61,53 +65,47 @@ export class IndexComponent implements OnInit, AfterViewInit {
     // setting up controls for moving view
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.autoRotate = true;
-    this.controls.autoRotateSpeed = 3.0;
+    this.controls.enablePan = false;
+    this.controls.autoRotateSpeed = 2.0;
 
 
     this.scene.add(new AmbientLight(0x333333));
 
     var light = new DirectionalLight(0xffffff, 1);
-    light.position.set(5,3,5);
+    light.position.set(5, 3, 5);
     this.camera.add(light);
 
     var geometry = new SphereGeometry(1, 100, 100);
 
     // load in texture files
     var textureLoader = new TextureLoader();
-    var textureMap, textureBumpMap, textureSpecMap;
+    var material = new MeshPhongMaterial();
 
-    textureLoader.load('assets/images/2_no_clouds_4k.jpg', (texture) => {
-      textureMap = texture;
-      console.log('texturemap loaded');
-    });
-
-    textureLoader.load('assets/images/elev_bump_4k.jpg', (texture) => {
-      textureBumpMap = texture;
-      console.log('textureBumpMap loaded');
-    });
-    textureLoader.load('assets/images/water_4k.png', (texture) => {
-      textureSpecMap = texture;
-      console.log('textureSpecMap loaded');
+    textureLoader.load(this.TEXTURE_MAP, (texture) => {
+      this.earthMesh.material.setValues({ map: texture });
+      this.earthMesh.material.needsUpdate = true;
     });
 
-    var material = new MeshPhongMaterial({
-      map: textureMap,
-      bumpMap: textureBumpMap,
-      bumpScale: 0.005,
-      specularMap: textureSpecMap,
-      specular: new Color('grey')
+    textureLoader.load(this.TEXTURE_BUMP_MAP, (texture) => {
+      this.earthMesh.material.setValues({ bumpMap: texture });
+      this.earthMesh.material.needsUpdate = true;
     });
-    var earthMesh = new Mesh(geometry, material);
-    this.scene.add(earthMesh);
-    console.log('scene added earth')
-    
+
+    textureLoader.load(this.TEXTURE_SPECULAR_MAP, (texture) => {
+      this.earthMesh.material.setValues({ specularMap: texture });
+      this.earthMesh.material.needsUpdate = true;
+    });
+
+    this.earthMesh = new Mesh(geometry, material);
+    this.scene.add(this.earthMesh);
+
     // call the animate loop
     this.animate();
   }
 
   animate() {
     window.requestAnimationFrame(() => this.animate());
-    
+
     // required for autoRotate
     this.controls.update();
 
